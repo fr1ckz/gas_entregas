@@ -1,66 +1,105 @@
 import { StyleSheet } from "react-native";
 
 export const styles = StyleSheet.create({
-  mainContainer: {
-    marginTop: 10,
-    width: '100%',
-    height: 250,
-    justifyContent: 'center',
-    backgroundColor: 'white',
-    alignItems: 'center',
-    borderRadius: 15,
+  container: {
+    flex: 1,
+    paddingHorizontal: 16,
+    paddingTop: 40,
+    backgroundColor: "#f9f9f9",
+  },
+  scrollArea: {
+    paddingBottom: 140, // espaço pro resumo fixo
+  },
+  tituloTexto: {
+    fontSize: 22,
+    fontWeight: "bold",
+    textAlign: "center",
+    marginVertical: 16,
+    color: "#333",
   },
   input: {
-    width: "90%",
-    height: 40,
-    borderColor: "#ccc",
-    borderWidth: 1,
-    borderRadius: 5,
-    paddingHorizontal: 10,
-    marginVertical: 10,
-  },
-  resumo: {
-    marginTop: 20,
-    padding: 15,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#fff",
+    paddingHorizontal: 12,
+    paddingVertical: 10,
     borderRadius: 8,
-  },
-  resumoTexto: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  texto: {
-    fontSize: 15,
-  },
-  cliente: {
-    marginTop: 10,
-    padding: 10,
-    backgroundColor: "#e6e6e6",
-    borderRadius: 5,
-  },
-
-  clienteBox: {
-    backgroundColor: "#f2f2f2",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 10,
-    borderColor: "#ccc",
     borderWidth: 1,
+    borderColor: "#ddd",
+    marginBottom: 12,
+  },
+  botao: {
+    backgroundColor: "#28a745",
+    paddingVertical: 12,
+    borderRadius: 8,
+    alignItems: "center",
+    marginBottom: 20,
+  },
+  botaoTexto: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  clienteBox: {
+    backgroundColor: "#d6d4ce",
+    borderRadius: 10,
+    padding: 15,
+    marginBottom: 15,
+    marginLeft: '5%',
+    marginRight: '5%',
     shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowRadius: 4,
     elevation: 3,
   },
   clienteNome: {
     fontSize: 16,
     fontWeight: "bold",
-    marginBottom: 5,
+    marginBottom: 4,
   },
   clienteInfo: {
     fontSize: 14,
+    color: "#555",
   },
-
-
+  cancelarBtn: {
+    marginTop: 10,
+    backgroundColor: "#dc3545",
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  cancelarBtnTexto: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
+  resumo: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    marginLeft: '20%',
+    marginRight: '20%',
+    marginBottom: 20,
+    paddingVertical: 16,
+    backgroundColor: "#dae0e0",
+    borderWidth: 3,
+    borderRadius: 25,
+    borderColor: "#000",
+    alignItems: "center",
+  },
+  resumoTexto: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#333",
+  }, entregueBtn: {
+    marginTop: 8,
+    backgroundColor: "#007bff",
+    paddingVertical: 8,
+    borderRadius: 6,
+    alignItems: "center",
+  },
+  entregueBtnTexto: {
+    color: "#fff",
+    fontWeight: "bold",
+  },
 
 });
