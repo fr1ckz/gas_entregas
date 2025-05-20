@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import React, { useEffect, useState } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { Alert, Platform, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { styles } from "./styles";
 
 export default function HomeScreen() {
@@ -19,18 +19,14 @@ export default function HomeScreen() {
   }
 
   const [clientes, setClientes] = useState<Cliente[]>([]);
+
   useEffect(() => {
     carregarClientes();
   }, []);
 
-  useEffect(() => {
-    salvarClientes();
-  }, [clientes]);
-
-  const salvarClientes = async () => {
+  const salvarClientesManual = async (clientesParaSalvar: Cliente[]) => {
     try {
-      const json = JSON.stringify(clientes);
-      await AsyncStorage.setItem("@clientes", json);
+      await AsyncStorage.setItem("@clientes", JSON.stringify(clientesParaSalvar));
     } catch (error) {
       console.error("Erro ao salvar os dados:", error);
     }
@@ -38,23 +34,29 @@ export default function HomeScreen() {
 
   const carregarClientes = async () => {
     try {
-      const json = await AsyncStorage.getItem("@clientes");
-      if (json !== null) {
-        setClientes(JSON.parse(json));
+      const data = await AsyncStorage.getItem("@clientes");
+      if (data !== null) {
+        setClientes(JSON.parse(data));
       }
     } catch (error) {
-      console.error("Erro ao carregar os dados:", error);
+      console.error("Erro ao carregar dados", error);
     }
   };
 
   const adicionarCliente = () => {
-    if (!nome || !telefone || !quantidadeBotijoes || !endereco || isNaN(Number(quantidadeBotijoes))) {
-      Alert.alert("Preencha todos os campos corretamente!");
+    if (
+      !nome ||
+      !telefone ||
+      !quantidadeBotijoes ||
+      !endereco ||
+      isNaN(Number(quantidadeBotijoes))
+    ) {
+      Alert.alert("Preencha todos os campos corretamente.");
       return;
     }
 
     const novoCliente: Cliente = {
-      id: String(new Date().getTime()),
+      id: String(Date.now()),
       nome,
       telefone,
       quantidadeBotijoes,
@@ -62,7 +64,10 @@ export default function HomeScreen() {
       entregue: false,
     };
 
-    setClientes((prev) => [...prev, novoCliente]);
+    const novosClientes = [...clientes, novoCliente];
+    setClientes(novosClientes);
+    salvarClientesManual(novosClientes);
+
     setNome("");
     setTelefone("");
     setQuantidadeBotijoes("");
@@ -70,27 +75,93 @@ export default function HomeScreen() {
   };
 
   const marcarComoEntregue = (id: string) => {
-    setClientes((prev) =>
-      prev.map((cliente) =>
-        cliente.id === id ? { ...cliente, entregue: true } : cliente
-      )
+    const atualizados = clientes.map((c) =>
+      c.id === id ? { ...c, entregue: true } : c
     );
+    setClientes(atualizados);
+    salvarClientesManual(atualizados);
   };
 
   const cancelarPedido = (id: string) => {
-    setClientes((prev) => prev.filter((cliente) => cliente.id !== id));
+    const atualizados = clientes.filter((c) => c.id !== id);
+    setClientes(atualizados);
+    salvarClientesManual(atualizados);
   };
 
-  const totalEntregues = clientes.filter((c) => c.entregue).length;
-  const totalBotijoesEntregues = clientes
-    .filter((c) => c.entregue)
-    .reduce((total, c) => total + parseInt(c.quantidadeBotijoes), 0);
+
+  const fecharDia = () => {
+    if (Platform.OS === "web") {
+
+      if (window.confirm("Deseja apagar todos os pedidos?")) {
+        confirmarFechamentoDoDia();
+      }
+    } else {
+
+      Alert.alert(
+        "Fechar o Dia",
+        "Deseja apagar todos os pedidos?",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel",
+          },
+          {
+            text: "Apagar",
+            onPress: confirmarFechamentoDoDia,
+          },
+        ],
+        { cancelable: true }
+      );
+    }
+  };
+
+  const confirmarFechamentoDoDia = async () => {
+    try {
+      if (Platform.OS === "web") {
+        if (window.confirm("Pedidos entregues " + pedidosEntregues.length + "\nBotijões entregues: " + totalBotijoesEntregues)) {
+        }
+      } else {
+
+        Alert.alert(
+          "Pedidos entregues " + pedidosEntregues.length,
+          "Botijões entregues: " + totalBotijoesEntregues,
+          [
+            {
+              text: "OK",
+              style: "cancel",
+            },
+
+          ],
+        );
+      }
+      await AsyncStorage.removeItem("@clientes");
+      setClientes([]);
+      Alert.alert("Sucesso", "Todos os pedidos foram apagados!");
+    } catch (error) {
+      console.error("Erro ao apagar os pedidos:", error);
+      Alert.alert("Erro", "Não foi possível apagar os pedidos.");
+    }
+  };
 
   const pedidosPendentes = clientes.filter((c) => !c.entregue);
+  const pedidosEntregues = clientes.filter((c) => c.entregue);
+  const totalBotijoesEntregues = pedidosEntregues.reduce(
+    (soma, c) => soma + parseInt(c.quantidadeBotijoes),
+    0
+  );
 
   return (
     <View style={styles.container}>
-      <Text style={styles.tituloTexto}>Cadastro de Clientes</Text>
+      <View style={styles.header}>
+        <Text style={styles.tituloTexto}>Cadastro de Clientes</Text>
+
+        <TouchableOpacity
+          style={styles.fecharBtn}
+          onPress={fecharDia}
+        >
+          <Text style={styles.fecharBtnTexto}>🧾 Fechar o Dia</Text>
+        </TouchableOpacity>
+      </View>
 
       <ScrollView contentContainerStyle={styles.scrollArea}>
         <TextInput
@@ -130,10 +201,10 @@ export default function HomeScreen() {
           <View key={cliente.id} style={styles.clienteBox}>
             <Text style={styles.clienteNome}>🧑 {cliente.nome}</Text>
             <Text style={styles.clienteInfo}>📞 {cliente.telefone}</Text>
-            <Text style={styles.clienteInfo}>🛢️ {cliente.quantidadeBotijoes} botijões</Text>
+            <Text style={styles.clienteInfo}>🛢️ {cliente.quantidadeBotijoes}</Text>
             <Text style={styles.clienteInfo}>📍 {cliente.endereco}</Text>
 
-            {!cliente.entregue && (
+            {!cliente.entregue ? (
               <>
                 <TouchableOpacity
                   style={styles.entregueBtn}
@@ -149,6 +220,8 @@ export default function HomeScreen() {
                   <Text style={styles.cancelarBtnTexto}>❌ Cancelar</Text>
                 </TouchableOpacity>
               </>
+            ) : (
+              <Text style={styles.textoEntregue}>✅ Pedido entregue</Text>
             )}
           </View>
         ))}
@@ -156,7 +229,7 @@ export default function HomeScreen() {
 
       <View style={styles.resumo}>
         <Text style={styles.resumoTexto}>📦 Pendentes: {pedidosPendentes.length}</Text>
-        <Text style={styles.resumoTexto}>✅ Entregues: {totalEntregues}</Text>
+        <Text style={styles.resumoTexto}>✅ Entregues: {pedidosEntregues.length}</Text>
         <Text style={styles.resumoTexto}>🛢️ Botijões entregues: {totalBotijoesEntregues}</Text>
       </View>
     </View>
